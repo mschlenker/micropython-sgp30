@@ -25,7 +25,7 @@
 
 I2C driver for SGP30 Sensirion VoC sensor
 
-* Author(s): ladyada
+* Author(s): ladyada, Alexandre Marquet.
 
 Implementation Notes
 --------------------
@@ -37,16 +37,15 @@ Implementation Notes
 
 **Software and Dependencies:**
 
-* Adafruit CircuitPython firmware for the ESP8622 and M0-based boards:
-  https://github.com/adafruit/circuitpython/releases
-* Adafruit's Bus Device library: https://github.com/adafruit/Adafruit_CircuitPython_BusDevice
+* MicroPython:
+    https://github.com/micropython/micropython
+
 """
 import time
-from adafruit_bus_device.i2c_device import I2CDevice
 from micropython import const
 
 __version__ = "0.0.0-auto.0"
-__repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_SGP30.git"
+__repo__ = "https://github.com/alexmrqt/Adafruit_CircuitPython_SGP30.git"
 
 
 # pylint: disable=bad-whitespace
@@ -65,7 +64,8 @@ class Adafruit_SGP30:
 
     def __init__(self, i2c, address=_SGP30_DEFAULT_I2C_ADDR):
         """Initialize the sensor, get the serial # and verify that we found a proper SGP30"""
-        self._device = I2CDevice(i2c, address)
+        self._i2c = i2c
+        self._addr = address
 
         # get unique serial, its 48 bits so we store in an array
         self.serial = self._i2c_read_words_from_cmd([0x36, 0x82], 0.01, 3)
@@ -143,23 +143,22 @@ class Adafruit_SGP30:
 
     def _i2c_read_words_from_cmd(self, command, delay, reply_size):
         """Run an SGP command query, get a reply and CRC results if necessary"""
-        with self._device:
-            self._device.write(bytes(command))
-            time.sleep(delay)
-            if not reply_size:
-                return None
-            crc_result = bytearray(reply_size * (_SGP30_WORD_LEN +1))
-            self._device.readinto(crc_result)
-            #print("\tRaw Read: ", crc_result)
-            result = []
-            for i in range(reply_size):
-                word = [crc_result[3*i], crc_result[3*i+1]]
-                crc = crc_result[3*i+2]
-                if self._generate_crc(word) != crc:
-                    raise RuntimeError('CRC Error')
-                result.append(word[0] << 8 | word[1])
-            #print("\tOK Data: ", [hex(i) for i in result])
-            return result
+        self._i2c.writeto(self._addr, bytes(command))
+        time.sleep(delay)
+        if not reply_size:
+            return None
+        crc_result = bytearray(reply_size * (_SGP30_WORD_LEN +1))
+        self._i2c.readfrom_into(self._addr, crc_result)
+        #print("\tRaw Read: ", crc_result)
+        result = []
+        for i in range(reply_size):
+            word = [crc_result[3*i], crc_result[3*i+1]]
+            crc = crc_result[3*i+2]
+            if self._generate_crc(word) != crc:
+                raise RuntimeError('CRC Error')
+            result.append(word[0] << 8 | word[1])
+        #print("\tOK Data: ", [hex(i) for i in result])
+        return result
 
     # pylint: disable=no-self-use
     def _generate_crc(self, data):

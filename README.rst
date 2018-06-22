@@ -2,56 +2,38 @@
 Introduction
 ============
 
-.. image:: https://readthedocs.org/projects/adafruit-circuitpython-sgp30/badge/?version=latest
-    :target: https://circuitpython.readthedocs.io/projects/sgp30/en/latest/
-    :alt: Documentation Status
+A MicroPython driver for the Sensirion SGP30 gas sensor with eCO2 and TVOC output. This sensor uses I2C!
 
-.. image :: https://img.shields.io/discord/327254708534116352.svg
-    :target: https://discord.gg/nBQh6qu
-    :alt: Discord
-
-.. image:: https://travis-ci.org/adafruit/Adafruit_CircuitPython_SGP30.svg?branch=master
-    :target: https://travis-ci.org/adafruit/Adafruit_CircuitPython_SGP30
-    :alt: Build Status
-
-A CircuitPython driver for the Sensirion SGP30 gas sensor with eCO2 and TVOC output. This sensor uses I2C!
-
-Dependencies
+Installation
 =============
-This driver depends on:
 
-* `Adafruit CircuitPython <https://github.com/adafruit/circuitpython>`_
-* `Bus Device <https://github.com/adafruit/Adafruit_CircuitPython_BusDevice>`_
-
-Please ensure all dependencies are available on the CircuitPython filesystem.
-This is easily achieved by downloading
-`the Adafruit library and driver bundle <https://github.com/adafruit/Adafruit_CircuitPython_Bundle>`_.
+On a LoPy, just put ``adafruit_sgp30.py`` in the ``lib/`` directory.
 
 Usage Notes
 =============
 
 See `the guide <https://learn.adafruit.com/adafruit-sgp30-gas-tvoc-eco2-mox-sensor/circuitpython-wiring-test>`_
-for wiring and installation instructions.
+for wiring instructions.
 
 First, import the library:
 
 .. code-block:: python
 
-    import busio
     import adafruit_sgp30
 
 Next, initialize the I2C bus object:
 
 .. code-block:: python
 
-    from board import *
-    i2c_bus = busio.I2C(board.SCL, board.SDA, frequency=100000)
+    from machine import I2C
+    i2c = I2C(0, I2C.MASTER)
+    i2c.init(I2C.MASTER, baudrate=100000)
 
 Since we have the I2C bus object, we can now use it to instantiate the SGP30 object:
 
 .. code-block:: python
 
-    sgp30 = adafruit_sgp30.Adafruit_SGP30(i2c_bus)
+    sgp30 = adafruit_sgp30.Adafruit_SGP30(i2c)
 
 Reading from the Sensor
 ------------------------
@@ -73,27 +55,6 @@ before contributing to help this project stay welcoming.
 
 Building locally
 ================
-
-To build this library locally you'll need to install the
-`circuitpython-build-tools <https://github.com/adafruit/circuitpython-build-tools>`_ package.
-
-.. code-block:: shell
-
-    python3 -m venv .env
-    source .env/bin/activate
-    pip install circuitpython-build-tools
-
-Once installed, make sure you are in the virtual environment:
-
-.. code-block:: shell
-
-    source .env/bin/activate
-
-Then run the build:
-
-.. code-block:: shell
-
-    circuitpython-build-bundles --filename_prefix adafruit-circuitpython-sgp30 --library_location .
 
 Sphinx documentation
 -----------------------

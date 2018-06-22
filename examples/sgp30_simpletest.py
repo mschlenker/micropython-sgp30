@@ -1,11 +1,11 @@
 """ Example for using the SGP30 with CircuitPython and the Adafruit library"""
 
 import time
-import board
-import busio
+from machine import I2C
 import adafruit_sgp30
 
-i2c = busio.I2C(board.SCL, board.SDA, frequency=100000)
+i2c = I2C(0, I2C.MASTER)
+i2c.init(I2C.MASTER, baudrate=100000)
 
 # Create library object on our I2C port
 sgp30 = adafruit_sgp30.Adafruit_SGP30(i2c)
