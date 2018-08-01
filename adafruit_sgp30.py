@@ -60,6 +60,9 @@ _SGP30_WORD_LEN          = const(2)
 class Adafruit_SGP30:
     """
     A driver for the SGP30 gas sensor.
+
+    :param i2c: The `I2C` object to use. This is the only required parameter.
+    :param int address: (optional) The I2C address of the device.
     """
 
     def __init__(self, i2c, address=_SGP30_DEFAULT_I2C_ADDR):
