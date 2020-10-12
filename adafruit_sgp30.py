@@ -41,6 +41,7 @@ Implementation Notes
     https://github.com/micropython/micropython
 
 """
+import math
 import time
 from micropython import const
 
@@ -118,7 +119,6 @@ class Adafruit_SGP30:
         # name, command, signals, delay
         return self._run_profile(["iaq_get_baseline", [0x20, 0x15], 2, 0.01])
 
-
     def set_iaq_baseline(self, co2eq, tvoc):
         """Set the previously recorded IAQ algorithm baseline for CO2eq and TVOC"""
         if co2eq == 0 and tvoc == 0:
@@ -130,6 +130,23 @@ class Adafruit_SGP30:
             buffer += arr
         self._run_profile(["iaq_set_baseline", [0x20, 0x1e] + buffer, 0, 0.01])
 
+    def set_iaq_humidity(self, gramsPM3):
+        """Set the humidity in g/m3 for eCO2 and TVOC compensation algorithm"""
+        tmp = int(gramsPM3 * 256)
+        buffer = []
+        for value in [tmp]:
+            arr = [value >> 8, value & 0xFF]
+            arr.append(self._generate_crc(arr))
+            buffer += arr
+        self._run_profile(["iaq_set_humidity", [0x20, 0x61] + buffer, 0, 0.01])
+
+    def set_iaq_rel_humidity(self, rh, temp):
+        """Set the relative humidity in % for eCO2 and TVOC compensation algorithm"""
+        # Formula from "Generic SGP Driver Integration for Software I2C"
+        gramsPM3 = rh/100.0 * 6.112 * math.exp(17.62*temp/(243.12+temp))
+        gramsPM3 *= 216.7 / (273.15 + temp)
+
+        self.set_iaq_humidity(gramsPM3)
 
     # Low level command functions
 
